@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>მიხო — ხინკლის სათავგადასავლო (Super Mikho)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-wrap">
+    <header id="hud">
+      <span class="hud-item">🥟 ხინკალი: <b id="score">0</b></span>
+      <span class="hud-item">❤️ სიცოცხლე: <b id="lives">3</b></span>
+      <span class="hud-item">🏁 ტური: <b id="level">1</b></span>
+    </header>
+
+    <canvas id="game" width="900" height="480"></canvas>
+
+    <div id="overlay" class="overlay">
+      <h1>მიხო 🥟</h1>
+      <p class="subtitle">ხინკლის სათავგადასავლო</p>
+      <p class="story">
+        მიხო — მამაცი კახელი — გავიდა ჯუჯა ყიზილბაშების წინააღმდეგ.<br/>
+        შეაგროვე ხინკალი, გადახტი მტრებზე და მიაღწიე ჯვარს!
+      </p>
+      <ul class="controls">
+        <li><b>← →</b> ან <b>A / D</b> — სიარული</li>
+        <li><b>Space</b> ან <b>↑</b> ან <b>W</b> — ხტომა</li>
+      </ul>
+      <button id="start-btn">დაიწყე თამაში</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

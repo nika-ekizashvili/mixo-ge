@@ -1,0 +1,103 @@
+:root {
+  --bg: #1a1230;
+  --panel: rgba(20, 12, 40, 0.92);
+  --accent: #e23b2e;
+  --gold: #f3c14b;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: radial-gradient(circle at 50% -10%, #3a2a66 0%, var(--bg) 60%);
+  color: #f5f0e6;
+  font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game-wrap {
+  position: relative;
+  width: 900px;
+  max-width: 96vw;
+}
+
+#hud {
+  display: flex;
+  gap: 24px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border: 2px solid var(--gold);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+.hud-item b { color: var(--gold); }
+
+canvas#game {
+  display: block;
+  width: 100%;
+  background: #6db3f2;
+  border: 2px solid var(--gold);
+  border-radius: 0 0 12px 12px;
+  image-rendering: pixelated;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.overlay.hidden { display: none; }
+
+.overlay h1 {
+  font-size: 58px;
+  margin: 0;
+  color: var(--gold);
+  text-shadow: 3px 3px 0 var(--accent);
+}
+
+.subtitle {
+  font-size: 24px;
+  margin: 4px 0 18px;
+  color: #fff;
+}
+
+.story { line-height: 1.6; max-width: 560px; opacity: 0.9; }
+
+.controls {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0;
+  line-height: 1.9;
+  opacity: 0.95;
+}
+.controls b { color: var(--gold); }
+
+button {
+  margin-top: 14px;
+  padding: 14px 34px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #9b271d;
+  transition: transform 0.05s;
+}
+button:active { transform: translateY(4px); box-shadow: 0 1px 0 #9b271d; }
