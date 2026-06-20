@@ -27,6 +27,17 @@
   const JUMP_VELOCITY = -13.5;
   const TILE = 40;
 
+  // ---- Background photo: Mount Elbrus (იალბუზი) ----
+  // Loaded from Wikimedia's canonical Special:FilePath endpoint (302-redirects
+  // to the real image, which the browser follows). We only draw it — never read
+  // its pixels — so the cross-origin canvas taint is harmless here. If it fails
+  // to load, drawBackground() falls back to the hand-drawn Caucasus peaks.
+  const bgImg = new Image();
+  let bgReady = false;
+  bgImg.onload = () => { bgReady = bgImg.naturalWidth > 0; };
+  bgImg.onerror = () => { bgReady = false; };
+  bgImg.src = "https://commons.wikimedia.org/wiki/Special:FilePath/Elbrus%20-%20the%20Highest%20Mountain%20in%20Europe.jpg?width=1280";
+
   // ---- Input ----
   const keys = { left: false, right: false, jump: false };
   const keyMap = {
@@ -50,21 +61,24 @@
   //   K = khinkali collectible  Q = qizilbash enemy
   //   C = goal (cross/jvari)    . = empty
   // =========================================================
+  // Every pit is 2 tiles wide (80px) and every platform is at most 2 tiles
+  // up / 3 tiles across from solid footing — well inside the ~3.2-tile jump
+  // reach computed from the physics constants, so the whole level is clearable.
   const LEVEL_1 = [
-    "..............................................................",
-    "..............................................................",
-    "..............................................................",
-    "...................K..........................................",
-    "..............................................................",
-    "..........K......####..........K....K.........................",
-    "..............................................................",
-    ".......####.........................####...........K..........",
-    "...............K..........Q.....................######........",
-    "....K....................................K....................",
-    "........####.......####.......Q.......####...........Q.....C..",
-    "..........................................................X...",
-    "XXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXX...XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "........................K........K..............................",
+    "...............K.....................K..............K...........",
+    "..............###...................###............###..........",
+    "...K....Q.........Q.K...................Q...K..........Q..K..C..",
+    "XXXXXXXXXX..XXXXXXXXXXXXXXXX..XXXXXXXXXXXXXXXX..XXXXXXXXXXXXXXXX",
+    "XXXXXXXXXX..XXXXXXXXXXXXXXXX..XXXXXXXXXXXXXXXX..XXXXXXXXXXXXXXXX",
   ];
 
   // ---- Game state ----
@@ -92,8 +106,11 @@
       walkTime: 0,
       invuln: 0,
       dead: false,
+      coyote: 0,      // frames of "still allowed to jump" after leaving ground
+      jumpBuffer: 0,  // frames a queued jump press stays valid before landing
     };
   }
+  let prevJump = false; // edge-detect the jump key
 
   function buildLevel(map) {
     solids = [];
@@ -181,7 +198,21 @@
     p.vx = 0;
     if (keys.left) { p.vx = -MOVE_SPEED; p.facing = -1; }
     if (keys.right) { p.vx = MOVE_SPEED; p.facing = 1; }
-    if (keys.jump && p.onGround) { p.vy = JUMP_VELOCITY; p.onGround = false; }
+
+    // Jump with coyote time + input buffering so near-miss presses still fire.
+    const jumpPressed = keys.jump && !prevJump;
+    prevJump = keys.jump;
+    if (jumpPressed) p.jumpBuffer = 7;
+    if (p.onGround) p.coyote = 6; else if (p.coyote > 0) p.coyote--;
+    if (p.jumpBuffer > 0 && p.coyote > 0) {
+      p.vy = JUMP_VELOCITY;
+      p.onGround = false;
+      p.coyote = 0;
+      p.jumpBuffer = 0;
+    }
+    if (p.jumpBuffer > 0) p.jumpBuffer--;
+    // Variable jump height: release early for a short hop.
+    if (!keys.jump && p.vy < -4) p.vy = -4;
 
     if (p.vx !== 0) p.walkTime += 0.25;
     if (p.invuln > 0) p.invuln--;
@@ -293,8 +324,22 @@
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
 
-    // distant Caucasus mountains (parallax)
-    const px = camera.x * 0.3;
+    const px = camera.x * 0.3; // parallax offset
+
+    if (bgReady) {
+      // Real Mount Elbrus photo, cover-fit and anchored to the bottom. Drawn
+      // wider than the visible scroll range so no edge/seam ever shows.
+      const iw = bgImg.naturalWidth, ih = bgImg.naturalHeight;
+      const scale = Math.max((W + 520) / iw, H / ih);
+      const dw = iw * scale, dh = ih * scale;
+      ctx.drawImage(bgImg, -px, H - dh, dw, dh);
+      // soft haze so the foreground sprites stay readable
+      ctx.fillStyle = "rgba(190,225,255,0.18)";
+      ctx.fillRect(0, 0, W, H);
+      return;
+    }
+
+    // Fallback: hand-drawn distant Caucasus mountains (parallax)
     ctx.fillStyle = "#9fb6c9";
     for (let i = -1; i < 8; i++) {
       const mx = i * 260 - (px % 260);
